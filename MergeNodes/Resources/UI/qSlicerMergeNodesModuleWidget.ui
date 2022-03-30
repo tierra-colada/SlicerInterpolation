@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>323</width>
-    <height>332</height>
+    <width>368</width>
+    <height>416</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,7 +23,7 @@
       <item>
        <widget class="QRadioButton" name="pdataRadioBtn">
         <property name="text">
-         <string>Polydata (models+markups)</string>
+         <string>polydata (models+markups)</string>
         </property>
         <property name="checked">
          <bool>true</bool>
@@ -31,18 +31,150 @@
        </widget>
       </item>
       <item>
-       <widget class="QRadioButton" name="ugridRadioBtn">
+       <widget class="QRadioButton" name="imageRadioBtn">
         <property name="text">
-         <string>Unstructured grid (models)</string>
+         <string>image (volumes)</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QRadioButton" name="imageRadioBtn">
+       <widget class="QRadioButton" name="anyRadioBtn">
         <property name="text">
-         <string>Image (volumes)</string>
+         <string>any (output is model with unstructured grid)</string>
         </property>
        </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="appendImageSettingsGroupBox">
+     <property name="title">
+      <string>Settings</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_3">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>append axis:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="appendAxisSpinBox">
+          <property name="minimumSize">
+           <size>
+            <width>60</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="toolTip">
+           <string>1 - X axis; 2 - Y axis; 3 - Z axis</string>
+          </property>
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>3</number>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="appendAnySettingsGroupBox">
+     <property name="title">
+      <string>Settings</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_4">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item>
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string>merge coincidental points:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_2">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="mergePointsCheckBox">
+          <property name="toolTip">
+           <string>If the filter should merge coincidental points Note: The filter will only merge points if the ghost cell array doesn't exist</string>
+          </property>
+          <property name="text">
+           <string>On/Off</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <item>
+         <widget class="QLabel" name="label_4">
+          <property name="text">
+           <string>tolerance:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_3">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QDoubleSpinBox" name="mergePointsTolDoubleSpinBox">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="decimals">
+           <number>4</number>
+          </property>
+          <property name="maximum">
+           <double>999999.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
      </layout>
     </widget>
@@ -128,6 +260,22 @@
     <hint type="destinationlabel">
      <x>191</x>
      <y>169</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>mergePointsCheckBox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>mergePointsTolDoubleSpinBox</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>290</x>
+     <y>233</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>269</x>
+     <y>263</y>
     </hint>
    </hints>
   </connection>

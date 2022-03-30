@@ -21,9 +21,15 @@
 // Slicer includes
 #include "qSlicerMergeNodesModuleWidget.h"
 #include "ui_qSlicerMergeNodesModuleWidget.h"
+#include "vtkSlicerMergeNodesLogic.h"
 
 // MRML includes
 #include <vtkMRMLScene.h>
+#include <vtkMRMLDisplayableNode.h>
+#include <vtkMRMLModelNode.h>
+#include <vtkMRMLVolumeNode.h>
+#include <vtkMRMLScalarVolumeNode.h>
+#include <vtkMRMLMarkupsNode.h>
 
 //-----------------------------------------------------------------------------
 /// \ingroup Slicer_QtModules_ExtensionTemplate
@@ -70,14 +76,17 @@ void qSlicerMergeNodesModuleWidget::setup()
   d->AddSelectorWidget->setEditEnabled(false);
   d->AddSelectorWidget->setRenameEnabled(false);
 
+  d->appendImageSettingsGroupBox->setHidden(true);
+  d->appendAnySettingsGroupBox->setHidden(true);
+
   connect(this, &qSlicerWidget::mrmlSceneChanged,
           d->AddSelectorWidget, &qSlicerWidget::setMRMLScene);
 
   connect(d->pdataRadioBtn, &QRadioButton::toggled,
           this, &qSlicerMergeNodesModuleWidget::onRadioButtonToggled);
-  connect(d->ugridRadioBtn, &QRadioButton::toggled,
-          this, &qSlicerMergeNodesModuleWidget::onRadioButtonToggled);
   connect(d->imageRadioBtn, &QRadioButton::toggled,
+          this, &qSlicerMergeNodesModuleWidget::onRadioButtonToggled);
+  connect(d->anyRadioBtn, &QRadioButton::toggled,
           this, &qSlicerMergeNodesModuleWidget::onRadioButtonToggled);
 
   connect(d->applyBtn, &QPushButton::clicked,
@@ -92,22 +101,75 @@ void qSlicerMergeNodesModuleWidget::onRadioButtonToggled(bool val)
   if (!radio)
     return;
 
-  QStringList nodeTypes;
+  QStringList nodeTypesIn, nodeTypesOut;
   if (radio == d->pdataRadioBtn){
-    nodeTypes = QStringList({"vtkMRMLModelNode", "vtkMRMLMarkupsNode"});
-  } else if (radio == d->ugridRadioBtn){
-    nodeTypes = QStringList({"vtkMRMLModelNode"});
+    nodeTypesIn = QStringList({"vtkMRMLModelNode", "vtkMRMLMarkupsNode"});
+    nodeTypesOut = QStringList({"vtkMRMLModelNode"});
+    d->appendImageSettingsGroupBox->setHidden(true);
+    d->appendAnySettingsGroupBox->setHidden(true);
   } else if (radio == d->imageRadioBtn){
-    nodeTypes = QStringList({"vtkMRMLScalarVolumeNode"});
+    nodeTypesIn = QStringList({"vtkMRMLVolumeNode"});
+    // node selector is unable to create vtkMRMLVolumeNode
+    nodeTypesOut = QStringList({"vtkMRMLScalarVolumeNode"});
+    d->appendImageSettingsGroupBox->setHidden(false);
+    d->appendAnySettingsGroupBox->setHidden(true);
+  } else if (radio == d->anyRadioBtn){
+    nodeTypesIn = QStringList({"vtkMRMLModelNode", "vtkMRMLMarkupsNode", "vtkMRMLVolumeNode"});
+    nodeTypesOut = QStringList({"vtkMRMLModelNode"});
+    d->appendImageSettingsGroupBox->setHidden(true);
+    d->appendAnySettingsGroupBox->setHidden(false);
   } else {
     return;
   }
-  d->AddSelectorWidget->setNodeTypes(nodeTypes);
-  d->outNodeSelector->setNodeTypes(nodeTypes);
+  d->AddSelectorWidget->setNodeTypes(nodeTypesIn);
+  d->outNodeSelector->setNodeTypes(nodeTypesOut);
 }
 
 //-----------------------------------------------------------------------------
 void qSlicerMergeNodesModuleWidget::onApplyBtnClicked()
 {
+  Q_D(qSlicerMergeNodesModuleWidget);
+  vtkSlicerMergeNodesLogic* mergeNodesLogic =
+      vtkSlicerMergeNodesLogic::SafeDownCast(logic());
+  if (!mergeNodesLogic){
+    qCritical() << Q_FUNC_INFO << "Unable to get MergeNodes logic";
+    return;
+  }
 
+  vtkMRMLNode* outNode = d->outNodeSelector->currentNode();
+  if (!outNode){
+    qCritical() << Q_FUNC_INFO << "Output node is NULL";
+    return;
+  }
+
+  int imageAppendAxis = d->appendAxisSpinBox->value()-1;
+  bool mergeCoincidentalPoints = d->mergePointsCheckBox->isChecked();
+  double mergeCoincidentalPointsTol = d->mergePointsTolDoubleSpinBox->value();
+
+  std::vector<vtkMRMLNode*> nodes = d->AddSelectorWidget->getSelectedNodes();
+  std::vector<vtkMRMLDisplayableNode*> dispNodes;
+  for (vtkMRMLNode* node : nodes){
+    if (vtkMRMLDisplayableNode::SafeDownCast(node))
+      dispNodes.push_back(vtkMRMLDisplayableNode::SafeDownCast(node));
+  }
+
+  if (d->pdataRadioBtn->isChecked()){
+    mergeNodesLogic->AppendPolyData(dispNodes, vtkMRMLModelNode::SafeDownCast(outNode));
+  } else if (d->imageRadioBtn->isChecked()){
+    std::vector<vtkMRMLVolumeNode*> volumeNodes;
+    for (vtkMRMLNode* node : nodes){
+      if (vtkMRMLVolumeNode::SafeDownCast(node))
+        volumeNodes.push_back(vtkMRMLVolumeNode::SafeDownCast(node));
+    }
+    mergeNodesLogic->AppendImageData(
+          volumeNodes,
+          imageAppendAxis,
+          vtkMRMLVolumeNode::SafeDownCast(outNode));
+  } else if (d->anyRadioBtn->isChecked()){
+    mergeNodesLogic->AppendAny(
+          dispNodes,
+          mergeCoincidentalPoints,
+          mergeCoincidentalPointsTol,
+          vtkMRMLModelNode::SafeDownCast(outNode));
+  }
 }

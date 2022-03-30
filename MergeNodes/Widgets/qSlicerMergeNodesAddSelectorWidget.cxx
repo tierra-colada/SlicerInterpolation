@@ -47,6 +47,7 @@ public:
     qSlicerMergeNodesAddSelectorWidget& object);
   virtual void setupUi(qSlicerMergeNodesAddSelectorWidget*);
 
+  QString labelText = "Input";
   QVBoxLayout* mainVLayout;
   QStringList nodeTypes;
   bool showChildNodeTypes = true;
@@ -111,13 +112,25 @@ qSlicerMergeNodesAddSelectorWidget
 {
 }
 
-//-----------------------------------------------------------------------------
-QVector<vtkMRMLNode*> qSlicerMergeNodesAddSelectorWidget::getSelectedNodes()
+void qSlicerMergeNodesAddSelectorWidget::setLabelText(const QString& text)
 {
-  QVector<vtkMRMLNode*> nodes;
+  Q_D(qSlicerMergeNodesAddSelectorWidget);
+  d->labelText = text;
+}
+
+QString qSlicerMergeNodesAddSelectorWidget::getLabelText()
+{
+  Q_D(qSlicerMergeNodesAddSelectorWidget);
+  return d->labelText;
+}
+
+//-----------------------------------------------------------------------------
+std::vector<vtkMRMLNode*> qSlicerMergeNodesAddSelectorWidget::getSelectedNodes()
+{
+  std::vector<vtkMRMLNode*> nodes;
   QVector<qMRMLNodeComboBox*> combos = getNodeComboBoxes();
   for (qMRMLNodeComboBox* combo : combos)
-    nodes.append(combo->currentNode());
+    nodes.push_back(combo->currentNode());
 
   return nodes;
 }
@@ -301,7 +314,7 @@ QWidget* qSlicerMergeNodesAddSelectorWidget::createWidgetPair()
   QWidget* widget = new QWidget;
   QLabel* label = new QLabel;
   label->setObjectName("Label");
-  label->setText("Input " + QString::number(d->mainVLayout->count()) + ":");
+  label->setText(d->labelText + " " + QString::number(d->mainVLayout->count()) + ":");
   qMRMLNodeComboBox* combo = new qMRMLNodeComboBox;
   combo->setObjectName("NodeComboBox");
   combo->setNodeTypes(d->nodeTypes);

@@ -42,8 +42,13 @@ public:
   ~qSlicerMergeNodesAddSelectorWidget() override;
 
 public slots:
-  QVector<vtkMRMLNode*> getSelectedNodes();
+  /// Not a 'QVector' as nodes usually passed to logic
+  std::vector<vtkMRMLNode*> getSelectedNodes();
   QVector<qMRMLNodeComboBox*> getNodeComboBoxes();
+
+  /// the text to be displayed in QLabel
+  void setLabelText(const QString& text);
+  QString getLabelText();
 
   void setNodeTypes(const QStringList& nodeTypes);
   QStringList getNodeTypes();

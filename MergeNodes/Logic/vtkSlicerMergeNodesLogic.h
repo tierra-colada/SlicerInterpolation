@@ -34,6 +34,10 @@
 
 #include "vtkSlicerMergeNodesModuleLogicExport.h"
 
+class vtkMRMLDisplayableNode;
+class vtkMRMLModelNode;
+class vtkMRMLVolumeNode;
+class vtkMRMLScalarVolumeNode;
 
 /// \ingroup Slicer_QtModules_ExtensionTemplate
 class VTK_SLICER_MERGENODES_MODULE_LOGIC_EXPORT vtkSlicerMergeNodesLogic :
@@ -44,6 +48,24 @@ public:
   static vtkSlicerMergeNodesLogic *New();
   vtkTypeMacro(vtkSlicerMergeNodesLogic, vtkSlicerModuleLogic);
   void PrintSelf(ostream& os, vtkIndent indent) override;
+
+  /// Model (with polydata) nodes or Markups
+  void AppendPolyData(
+      const std::vector<vtkMRMLDisplayableNode*>& nodesIn,
+      vtkMRMLModelNode* nodeOut);
+
+  /// appendAxis: 0 - X; 1 - Y; 2 - Z
+  void AppendImageData(
+      const std::vector<vtkMRMLVolumeNode*>& nodesIn,
+      int appendAxis,
+      vtkMRMLVolumeNode* nodeOut);
+
+  /// The output is Model node with unstructured grid
+  void AppendAny(
+      const std::vector<vtkMRMLDisplayableNode*>& nodesIn,
+      bool mergeCoincidentalPoints,
+      double tol,
+      vtkMRMLModelNode* nodeOut);
 
 protected:
   vtkSlicerMergeNodesLogic();
