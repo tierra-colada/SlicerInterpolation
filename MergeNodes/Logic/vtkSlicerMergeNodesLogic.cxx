@@ -139,7 +139,7 @@ void vtkSlicerMergeNodesLogic::AppendImageData(
     if (!node)
       continue;
 
-    appendFilter->SetInputData(idx, node->GetImageData());
+    appendFilter->AddInputData(node->GetImageData());
     idx ++;
   }
 
