@@ -132,7 +132,6 @@ void vtkSlicerMergeNodesLogic::AppendImageData(
     return;
   }
 
-  int idx = 0;
   vtkNew<vtkImageAppend> appendFilter;
   appendFilter->SetAppendAxis(appendAxis);
   for (vtkMRMLVolumeNode* node : nodesIn){
@@ -140,7 +139,6 @@ void vtkSlicerMergeNodesLogic::AppendImageData(
       continue;
 
     appendFilter->AddInputData(node->GetImageData());
-    idx ++;
   }
 
   if (appendFilter->GetNumberOfInputConnections(0) < 1){
