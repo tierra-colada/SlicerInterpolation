@@ -5,7 +5,7 @@ project(SlicerInterpolation)
 #-----------------------------------------------------------------------------
 # Extension meta-information
 set(EXTENSION_HOMEPAGE "https://www.slicer.org/wiki/Documentation/Nightly/Extensions/SlicerInterpolation")
-set(EXTENSION_CATEGORY "")
+set(EXTENSION_CATEGORY "Interpolation")
 set(EXTENSION_CONTRIBUTORS "Kerim Khemraev (Tierra Colada)")
 set(EXTENSION_DESCRIPTION "The extension provides means to merge and interpolate displayable nodes")
 set(EXTENSION_ICONURL "http://www.example.com/Slicer/Extensions/SlicerInterpolation.png")

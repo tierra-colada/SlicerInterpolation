@@ -1,7 +1,7 @@
 
 #-----------------------------------------------------------------------------
 set(MODULE_NAME MergeNodes)
-set(MODULE_TITLE ${MODULE_NAME})
+set(MODULE_TITLE "Merge Nodes")
 
 string(TOUPPER ${MODULE_NAME} MODULE_NAME_UPPER)
 

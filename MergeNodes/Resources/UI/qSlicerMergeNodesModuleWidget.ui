@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>525</width>
-    <height>319</height>
+    <width>323</width>
+    <height>332</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,15 +15,67 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="ctkCollapsibleButton" name="CTKCollapsibleButton" native="true">
-     <property name="text" stdset="0">
-      <string>Display</string>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Data type</string>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_3">
+     <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
-       <widget class="qSlicerMergeNodesFooBarWidget" name="FooBar" native="true"/>
+       <widget class="QRadioButton" name="pdataRadioBtn">
+        <property name="text">
+         <string>Polydata (models+markups)</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="ugridRadioBtn">
+        <property name="text">
+         <string>Unstructured grid (models)</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="imageRadioBtn">
+        <property name="text">
+         <string>Image (volumes)</string>
+        </property>
+       </widget>
       </item>
      </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="qSlicerMergeNodesAddSelectorWidget" name="AddSelectorWidget" native="true"/>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Output:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="qMRMLNodeComboBox" name="outNodeSelector">
+       <property name="nodeTypes">
+        <stringlist>
+         <string>vtkMRMLModelNode</string>
+         <string>vtkMRMLMarkupsNode</string>
+        </stringlist>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QPushButton" name="applyBtn">
+     <property name="text">
+      <string>Apply</string>
+     </property>
     </widget>
    </item>
    <item>
@@ -43,24 +95,41 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>qMRMLNodeComboBox</class>
+   <extends>QWidget</extends>
+   <header>qMRMLNodeComboBox.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
    <class>qSlicerWidget</class>
    <extends>QWidget</extends>
    <header>qSlicerWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>ctkCollapsibleButton</class>
+   <class>qSlicerMergeNodesAddSelectorWidget</class>
    <extends>QWidget</extends>
-   <header>ctkCollapsibleButton.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>qSlicerMergeNodesFooBarWidget</class>
-   <extends>QWidget</extends>
-   <header>qSlicerMergeNodesFooBarWidget.h</header>
+   <header>qSlicerMergeNodesAddSelectorWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>qSlicerMergeNodesModuleWidget</sender>
+   <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
+   <receiver>outNodeSelector</receiver>
+   <slot>setMRMLScene(vtkMRMLScene*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>161</x>
+     <y>165</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>191</x>
+     <y>169</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

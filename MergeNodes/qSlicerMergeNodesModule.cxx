@@ -82,7 +82,7 @@ QIcon qSlicerMergeNodesModule::icon() const
 //-----------------------------------------------------------------------------
 QStringList qSlicerMergeNodesModule::categories() const
 {
-  return QStringList() << "Examples";
+  return QStringList() << "Interpolation";
 }
 
 //-----------------------------------------------------------------------------

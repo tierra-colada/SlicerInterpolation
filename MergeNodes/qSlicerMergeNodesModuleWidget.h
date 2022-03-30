@@ -39,7 +39,8 @@ public:
   virtual ~qSlicerMergeNodesModuleWidget();
 
 public slots:
-
+  void onRadioButtonToggled(bool val);
+  void onApplyBtnClicked();
 
 protected:
   QScopedPointer<qSlicerMergeNodesModuleWidgetPrivate> d_ptr;
