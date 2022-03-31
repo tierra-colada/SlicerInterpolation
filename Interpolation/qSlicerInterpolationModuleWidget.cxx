@@ -27,6 +27,14 @@
 // VTK includes
 #include <vtkPointInterpolator.h>
 #include <vtkGeneralizedKernel.h>
+#include <vtkImageData.h>
+#include <vtkPolyData.h>
+#include <vtkUnstructuredGrid.h>
+
+// MRML includes
+#include <vtkMRMLScalarVolumeNode.h>
+#include <vtkMRMLModelNode.h>
+#include <vtkMRMLMarkupsNode.h>
 
 // MRML includes
 #include <vtkMRMLDisplayableNode.h>
@@ -89,12 +97,12 @@ void qSlicerInterpolationModuleWidget::setup()
 void qSlicerInterpolationModuleWidget::onNullPointStrategyComboBoxTextChanged(const QString& text)
 {
   Q_D(qSlicerInterpolationModuleWidget);
-  if (text == "Mask Points"){
-    d->maskArrayLabel->setHidden(false);
-    d->maskArrayComboBox->setHidden(false);
+  if (text == "Null Value"){
+    d->nullPointLabel->setHidden(false);
+    d->nullPointDoubleSpinBox->setHidden(false);
   } else {
-    d->maskArrayLabel->setHidden(true);
-    d->maskArrayComboBox->setHidden(true);
+    d->nullPointLabel->setHidden(true);
+    d->nullPointDoubleSpinBox->setHidden(true);
   }
 }
 
@@ -192,8 +200,6 @@ void qSlicerInterpolationModuleWidget::onApplyButtonClicked()
     nullPointStrategy = vtkPointInterpolator::Strategy::NULL_VALUE;
   }
 
-  vtkStdString maskArrayName = d->maskArrayComboBox->currentArrayName().toStdString();
-
   int kernel = 0;
   if (d->kernelComboBox->currentText() == "Linear"){
     kernel = vtkSlicerInterpolationLogic::InterpolationKernel::Linear;
@@ -220,9 +226,11 @@ void qSlicerInterpolationModuleWidget::onApplyButtonClicked()
   double eccentricity = d->eccentricityDoubleSpinBox->value();
   double power = d->powerDoubleSpinBox->value();
 
+  qSlicerApplication::setOverrideCursor(Qt::BusyCursor);
   interpolationLogic->Interpolate(
         inputNode, outNode,
-        kernel, nullValue, nullPointStrategy, maskArrayName,
+        kernel, nullValue, nullPointStrategy,
         kernelFootPrint, nClosestPoints, radius,
         sharpness, eccentricity, power);
+  qSlicerApplication::restoreOverrideCursor();
 }

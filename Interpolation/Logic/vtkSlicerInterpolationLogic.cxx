@@ -38,6 +38,8 @@
 #include <vtkImageData.h>
 #include <vtkPolyData.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkPointData.h>
+#include<vtkMergePoints.h>
 
 // STD includes
 #include <cassert>
@@ -101,7 +103,6 @@ void vtkSlicerInterpolationLogic::InterpolateLinear(
     vtkMRMLDisplayableNode* nodeOut,
     double nullValue,
     int nullPointStrategy,
-    vtkStdString maskArrayName,
     int kernelFootprint,
     int nClosestPoints,
     double radius)
@@ -111,7 +112,6 @@ void vtkSlicerInterpolationLogic::InterpolateLinear(
                     InterpolationKernel::Linear,
                     nullValue,
                     nullPointStrategy,
-                    maskArrayName,
                     kernelFootprint,
                     nClosestPoints, radius,
                     0, 0, 0);
@@ -123,7 +123,6 @@ void vtkSlicerInterpolationLogic::InterpolateGaussian(
     vtkMRMLDisplayableNode* nodeOut,
     double nullValue,
     int nullPointStrategy,
-    vtkStdString maskArrayName,
     int kernelFootprint,
     int nClosestPoints,
     double radius,
@@ -134,7 +133,6 @@ void vtkSlicerInterpolationLogic::InterpolateGaussian(
                     InterpolationKernel::Linear,
                     nullValue,
                     nullPointStrategy,
-                    maskArrayName,
                     kernelFootprint,
                     nClosestPoints, radius,
                     sharpness, 0, 0);
@@ -146,7 +144,6 @@ void vtkSlicerInterpolationLogic::InterpolateEllipsoidalGaussian(
     vtkMRMLDisplayableNode* nodeOut,
     double nullValue,
     int nullPointStrategy,
-    vtkStdString maskArrayName,
     int kernelFootprint,
     int nClosestPoints,
     double radius,
@@ -158,7 +155,6 @@ void vtkSlicerInterpolationLogic::InterpolateEllipsoidalGaussian(
                     InterpolationKernel::Linear,
                     nullValue,
                     nullPointStrategy,
-                    maskArrayName,
                     kernelFootprint,
                     nClosestPoints, radius,
                     sharpness, eccentricity, 0);
@@ -170,7 +166,6 @@ void vtkSlicerInterpolationLogic::InterpolateProbabilisticVoronoi(
     vtkMRMLDisplayableNode* nodeOut,
     double nullValue,
     int nullPointStrategy,
-    vtkStdString maskArrayName,
     int kernelFootprint,
     int nClosestPoints,
     double radius)
@@ -180,7 +175,6 @@ void vtkSlicerInterpolationLogic::InterpolateProbabilisticVoronoi(
                     InterpolationKernel::Linear,
                     nullValue,
                     nullPointStrategy,
-                    maskArrayName,
                     kernelFootprint,
                     nClosestPoints, radius,
                     0, 0, 0);
@@ -192,7 +186,6 @@ void vtkSlicerInterpolationLogic::InterpolateShepard(
     vtkMRMLDisplayableNode* nodeOut,
     double nullValue,
     int nullPointStrategy,
-    vtkStdString maskArrayName,
     int kernelFootprint,
     int nClosestPoints,
     double radius,
@@ -203,7 +196,6 @@ void vtkSlicerInterpolationLogic::InterpolateShepard(
                     InterpolationKernel::Linear,
                     nullValue,
                     nullPointStrategy,
-                    maskArrayName,
                     kernelFootprint,
                     nClosestPoints, radius,
                     0, 0, power);
@@ -216,7 +208,6 @@ void vtkSlicerInterpolationLogic::Interpolate(
     int interpolationKernel,
     double nullValue,
     int nullPointStrategy,
-    vtkStdString maskArrayName,
     int kernelFootprint,
     int nClosestPoints,
     double radius,
@@ -298,7 +289,8 @@ void vtkSlicerInterpolationLogic::Interpolate(
   interpolator->SetKernel(kernel);
   interpolator->SetNullValue(nullValue);
   interpolator->SetNullPointsStrategy(nullPointStrategy);
-  interpolator->SetValidPointsMaskArrayName(maskArrayName);
+  // PassPointArraysOff is important
+  interpolator->PassPointArraysOff();
 
   if (vtkMRMLVolumeNode::SafeDownCast(nodeOut)){
     interpolator->SetInputData(vtkMRMLVolumeNode::SafeDownCast(nodeOut)->GetImageData());
@@ -323,4 +315,19 @@ void vtkSlicerInterpolationLogic::Interpolate(
   }
 
   interpolator->Update();
+
+  if (vtkMRMLVolumeNode::SafeDownCast(nodeOut)){
+    vtkMRMLVolumeNode::SafeDownCast(nodeOut)->SetAndObserveImageData(
+          interpolator->GetImageDataOutput());
+  } else if (vtkMRMLModelNode::SafeDownCast(nodeOut)) {
+    vtkMRMLModelNode::SafeDownCast(nodeOut)->SetAndObserveMesh(
+          vtkPointSet::SafeDownCast(interpolator->GetOutput()));
+  } else if (vtkMRMLMarkupsNode::SafeDownCast(nodeOut)) {
+    // for markups we only can try to set scalars
+    vtkMRMLMarkupsNode::SafeDownCast(nodeOut)->GetCurve()->GetPointData()->SetScalars(
+          vtkPointSet::SafeDownCast(interpolator->GetOutput())->GetPointData()->GetScalars());
+  } else {
+    vtkErrorMacro("vtkSlicerInterpolationLogic::Interpolate: Output node is neither Volume, Model or Markups");
+    return;
+  }
 }
