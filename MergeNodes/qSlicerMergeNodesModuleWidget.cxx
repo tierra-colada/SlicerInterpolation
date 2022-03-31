@@ -22,6 +22,7 @@
 #include "qSlicerMergeNodesModuleWidget.h"
 #include "ui_qSlicerMergeNodesModuleWidget.h"
 #include "vtkSlicerMergeNodesLogic.h"
+#include "qSlicerApplication.h"
 
 // MRML includes
 #include <vtkMRMLScene.h>
@@ -153,6 +154,7 @@ void qSlicerMergeNodesModuleWidget::onApplyBtnClicked()
       dispNodes.push_back(vtkMRMLDisplayableNode::SafeDownCast(node));
   }
 
+  qSlicerApplication::setOverrideCursor(Qt::BusyCursor);
   if (d->pdataRadioBtn->isChecked()){
     mergeNodesLogic->AppendPolyData(dispNodes, vtkMRMLModelNode::SafeDownCast(outNode));
   } else if (d->imageRadioBtn->isChecked()){
@@ -163,13 +165,14 @@ void qSlicerMergeNodesModuleWidget::onApplyBtnClicked()
     }
     mergeNodesLogic->AppendImageData(
           volumeNodes,
-          imageAppendAxis,
-          vtkMRMLVolumeNode::SafeDownCast(outNode));
+          vtkMRMLVolumeNode::SafeDownCast(outNode),
+          imageAppendAxis);
   } else if (d->anyRadioBtn->isChecked()){
     mergeNodesLogic->AppendAny(
           dispNodes,
+          vtkMRMLModelNode::SafeDownCast(outNode),
           mergeCoincidentalPoints,
-          mergeCoincidentalPointsTol,
-          vtkMRMLModelNode::SafeDownCast(outNode));
+          mergeCoincidentalPointsTol);
   }
+  qSlicerApplication::restoreOverrideCursor();
 }

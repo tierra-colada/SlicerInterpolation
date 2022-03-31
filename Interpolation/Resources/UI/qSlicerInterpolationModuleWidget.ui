@@ -1,0 +1,366 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>qSlicerInterpolationModuleWidget</class>
+ <widget class="qSlicerWidget" name="qSlicerInterpolationModuleWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>548</width>
+    <height>502</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QFormLayout" name="formLayout_3">
+     <item row="0" column="0">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Input:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="qMRMLNodeComboBox" name="inputNodeSelector"/>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Output:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="qMRMLNodeComboBox" name="outputNodeSelector"/>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="settingsGroupBox">
+     <property name="title">
+      <string>Settings</string>
+     </property>
+     <layout class="QFormLayout" name="formLayout_4">
+      <item row="1" column="0">
+       <widget class="QLabel" name="nullPointStrategyLabel">
+        <property name="text">
+         <string>Null point strategy:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="nullPointStrategyComboBox">
+        <item>
+         <property name="text">
+          <string>Null Value</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Closest Point</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Mask Points</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="nullPointLabel">
+        <property name="text">
+         <string>Null value:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QDoubleSpinBox" name="nullPointDoubleSpinBox">
+        <property name="decimals">
+         <number>4</number>
+        </property>
+        <property name="minimum">
+         <double>-999999.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>999999.000000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="interpolationKernelLabel">
+        <property name="text">
+         <string>Interpolation kernel:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QComboBox" name="kernelComboBox">
+        <item>
+         <property name="text">
+          <string>Linear</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Gaussian</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Ellipsoidal Gaussian</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Probabilistic Voronoi</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Shepard</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="maskArrayLabel">
+        <property name="text">
+         <string>Valid points mask array:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="ctkVTKDataSetArrayComboBox" name="maskArrayComboBox"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="kernelSettingsGroupBox">
+     <property name="title">
+      <string>Kernel Settings</string>
+     </property>
+     <layout class="QFormLayout" name="formLayout">
+      <item row="2" column="0">
+       <widget class="QLabel" name="radiusLabel">
+        <property name="text">
+         <string>Radius:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QDoubleSpinBox" name="radiusDoubleSpinBox">
+        <property name="toolTip">
+         <string>Radius within which the basis points must lie</string>
+        </property>
+        <property name="decimals">
+         <number>4</number>
+        </property>
+        <property name="minimum">
+         <double>0.000100000000000</double>
+        </property>
+        <property name="maximum">
+         <double>999999.000000000000000</double>
+        </property>
+        <property name="value">
+         <double>12.000000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="kernelFootprintLabel">
+        <property name="text">
+         <string>Kernel footprint:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="kernelFootPrintComboBox">
+        <item>
+         <property name="text">
+          <string>N Closest</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Radius</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="5" column="0">
+       <widget class="QLabel" name="eccentricityLabel">
+        <property name="text">
+         <string>Eccentricity:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="sharpnessLabel">
+        <property name="text">
+         <string>Sharpness:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QDoubleSpinBox" name="sharpnessDoubleSpinBox">
+        <property name="toolTip">
+         <string>As the sharpness increases the effects of distant points are reduced</string>
+        </property>
+        <property name="decimals">
+         <number>4</number>
+        </property>
+        <property name="minimum">
+         <double>0.000100000000000</double>
+        </property>
+        <property name="maximum">
+         <double>999999.000000000000000</double>
+        </property>
+        <property name="value">
+         <double>2.000000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1">
+       <widget class="QDoubleSpinBox" name="eccentricityDoubleSpinBox">
+        <property name="decimals">
+         <number>4</number>
+        </property>
+        <property name="minimum">
+         <double>0.000100000000000</double>
+        </property>
+        <property name="maximum">
+         <double>999999.000000000000000</double>
+        </property>
+        <property name="value">
+         <double>10.000000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="nClosestLabel">
+        <property name="text">
+         <string>N Closest points:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QSpinBox" name="nClosestSpinBox">
+        <property name="minimum">
+         <number>0</number>
+        </property>
+        <property name="maximum">
+         <number>999999</number>
+        </property>
+        <property name="value">
+         <number>12</number>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0">
+       <widget class="QLabel" name="powerLabel">
+        <property name="text">
+         <string>Power:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="1">
+       <widget class="QDoubleSpinBox" name="powerDoubleSpinBox">
+        <property name="decimals">
+         <number>4</number>
+        </property>
+        <property name="minimum">
+         <double>-5.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>5.000000000000000</double>
+        </property>
+        <property name="value">
+         <double>2.000000000000000</double>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="applyBtn">
+     <property name="text">
+      <string>Apply</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>qMRMLNodeComboBox</class>
+   <extends>QWidget</extends>
+   <header>qMRMLNodeComboBox.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>qSlicerWidget</class>
+   <extends>QWidget</extends>
+   <header>qSlicerWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ctkVTKDataSetArrayComboBox</class>
+   <extends>QComboBox</extends>
+   <header>ctkVTKDataSetArrayComboBox.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>qSlicerInterpolationModuleWidget</sender>
+   <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
+   <receiver>inputNodeSelector</receiver>
+   <slot>setMRMLScene(vtkMRMLScene*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>262</x>
+     <y>159</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>292</x>
+     <y>21</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>qSlicerInterpolationModuleWidget</sender>
+   <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
+   <receiver>outputNodeSelector</receiver>
+   <slot>setMRMLScene(vtkMRMLScene*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>262</x>
+     <y>159</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>292</x>
+     <y>52</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

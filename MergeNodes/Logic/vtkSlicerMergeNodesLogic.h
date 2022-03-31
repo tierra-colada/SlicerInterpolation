@@ -57,15 +57,15 @@ public:
   /// appendAxis: 0 - X; 1 - Y; 2 - Z
   void AppendImageData(
       const std::vector<vtkMRMLVolumeNode*>& nodesIn,
-      int appendAxis,
-      vtkMRMLVolumeNode* nodeOut);
+      vtkMRMLVolumeNode* nodeOut,
+      int appendAxis);
 
   /// The output is Model node with unstructured grid
   void AppendAny(
       const std::vector<vtkMRMLDisplayableNode*>& nodesIn,
+      vtkMRMLModelNode* nodeOut,
       bool mergeCoincidentalPoints,
-      double tol,
-      vtkMRMLModelNode* nodeOut);
+      double tol);
 
 protected:
   vtkSlicerMergeNodesLogic();

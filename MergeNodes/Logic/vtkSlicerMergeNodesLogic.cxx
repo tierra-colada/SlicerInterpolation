@@ -124,8 +124,8 @@ void vtkSlicerMergeNodesLogic::AppendPolyData(
 //---------------------------------------------------------------------------
 void vtkSlicerMergeNodesLogic::AppendImageData(
     const std::vector<vtkMRMLVolumeNode*>& nodesIn,
-    int appendAxis,
-    vtkMRMLVolumeNode* nodeOut)
+    vtkMRMLVolumeNode* nodeOut,
+    int appendAxis)
 {
   if (!nodeOut){
     vtkErrorMacro("vtkSlicerMergeNodesLogic::AppendImageData: Output node is NULL");
@@ -153,9 +153,9 @@ void vtkSlicerMergeNodesLogic::AppendImageData(
 //---------------------------------------------------------------------------
 void vtkSlicerMergeNodesLogic::AppendAny(
     const std::vector<vtkMRMLDisplayableNode*>& nodesIn,
+    vtkMRMLModelNode* nodeOut,
     bool mergeCoincidentalPoints,
-    double tol,
-    vtkMRMLModelNode* nodeOut)
+    double tol)
 {
   if (!nodeOut){
     vtkErrorMacro("vtkSlicerMergeNodesLogic::AppendAny: Output node is NULL");

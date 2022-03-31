@@ -17,13 +17,13 @@
    <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
-      <string>Data type</string>
+      <string>IO Data types</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
        <widget class="QRadioButton" name="pdataRadioBtn">
         <property name="text">
-         <string>polydata (models+markups)</string>
+         <string>polydata (I: models and markups; O: model)</string>
         </property>
         <property name="checked">
          <bool>true</bool>
@@ -33,14 +33,14 @@
       <item>
        <widget class="QRadioButton" name="imageRadioBtn">
         <property name="text">
-         <string>image (volumes)</string>
+         <string>image (IO volumes)</string>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QRadioButton" name="anyRadioBtn">
         <property name="text">
-         <string>any (output is model with unstructured grid)</string>
+         <string>any (I: any; O: unstructured grid model)</string>
         </property>
        </widget>
       </item>
