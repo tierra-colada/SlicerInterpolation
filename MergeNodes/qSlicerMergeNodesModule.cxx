@@ -88,7 +88,7 @@ QStringList qSlicerMergeNodesModule::categories() const
 //-----------------------------------------------------------------------------
 QStringList qSlicerMergeNodesModule::dependencies() const
 {
-  return QStringList();
+  return QStringList() << "Markups" << "Models" << "Volumes";
 }
 
 //-----------------------------------------------------------------------------
