@@ -245,6 +245,7 @@ void qSlicerInterpolationModuleWidget::onApplyButtonClicked()
       kernelFootPrint, nClosestPoints, radius,
       sharpness, eccentricity, power);
   } else {
+    // if there are multiple input nodes then we should merge them before interpolation
     qSlicerApplication* app = qSlicerApplication::application();
     if (!app) {
       qCritical() << Q_FUNC_INFO << "Unable to get Application instance";
@@ -267,6 +268,7 @@ void qSlicerInterpolationModuleWidget::onApplyButtonClicked()
     vtkNew<vtkMRMLModelNode> mergedModelNode;
     mergeNodesLogic->AppendPolyData(dispNodes, mergedModelNode);
 
+    // once input nodes are merged use the merged one as a source of interpolation
     interpolationLogic->Interpolate(
       mergedModelNode, outNode,
       kernel, nullValue, nullPointStrategy,
