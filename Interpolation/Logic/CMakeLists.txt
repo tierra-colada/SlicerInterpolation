@@ -10,11 +10,13 @@ set(${KIT}_INCLUDE_DIRECTORIES
 set(${KIT}_SRCS
   vtkSlicer${MODULE_NAME}Logic.cxx
   vtkSlicer${MODULE_NAME}Logic.h
+  ${vtkSlicerMergeNodesModuleLogic_INCLUDE_DIRS}
   )
 
 set(${KIT}_TARGET_LIBRARIES
   ${ITK_LIBRARIES}
   vtkSlicerMarkupsModuleMRML
+  vtkSlicerMergeNodesModuleLogic
   )
 
 #-----------------------------------------------------------------------------

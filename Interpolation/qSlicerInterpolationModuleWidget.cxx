@@ -22,7 +22,9 @@
 #include "qSlicerInterpolationModuleWidget.h"
 #include "ui_qSlicerInterpolationModuleWidget.h"
 #include "vtkSlicerInterpolationLogic.h"
+#include "vtkSlicerMergeNodesLogic.h"
 #include "qSlicerApplication.h"
+#include "qSlicerMergeNodesAddSelectorWidget.h"
 
 // VTK includes
 #include <vtkPointInterpolator.h>
@@ -35,6 +37,7 @@
 #include <vtkMRMLScalarVolumeNode.h>
 #include <vtkMRMLModelNode.h>
 #include <vtkMRMLMarkupsNode.h>
+#include <vtkMRMLScene.h>
 
 // MRML includes
 #include <vtkMRMLDisplayableNode.h>
@@ -77,11 +80,20 @@ void qSlicerInterpolationModuleWidget::setup()
   d->setupUi(this);
   this->Superclass::setup();
 
+  d->AddSelectorWidget->setNodeTypes({"vtkMRMLModelNode", "vtkMRMLMarkupsNode"});
+  d->AddSelectorWidget->setShowChildNodeType(true);
+  d->AddSelectorWidget->setAddEnabled(false);
+  d->AddSelectorWidget->setRemoveEnabled(false);
+  d->AddSelectorWidget->setEditEnabled(false);
+  d->AddSelectorWidget->setRenameEnabled(false);
+
   // hide unneded widgets
   this->onNullPointStrategyComboBoxTextChanged(d->nullPointStrategyComboBox->currentText());
   this->onKernelComboBoxTextChanged(d->kernelComboBox->currentText());
   this->onKernelFootPrintComboBoxTextChanged(d->kernelFootPrintComboBox->currentText());
 
+  connect(this, &qSlicerWidget::mrmlSceneChanged,
+    d->AddSelectorWidget, &qSlicerWidget::setMRMLScene);
   connect(d->nullPointStrategyComboBox, &QComboBox::currentTextChanged,
           this, &qSlicerInterpolationModuleWidget::onNullPointStrategyComboBoxTextChanged);
   connect(d->kernelComboBox, &QComboBox::currentTextChanged,
@@ -176,17 +188,10 @@ void qSlicerInterpolationModuleWidget::onApplyButtonClicked()
     return;
   }
 
-  vtkMRMLDisplayableNode* inputNode = vtkMRMLDisplayableNode::SafeDownCast(
-        d->inputNodeSelector->currentNode());
-  if (!inputNode){
-    qCritical() << Q_FUNC_INFO << "Unable to cast Input node to vtkMRMLDisplayableNode";
-    return;
-  }
-
   vtkMRMLDisplayableNode* outNode = vtkMRMLDisplayableNode::SafeDownCast(
         d->outputNodeSelector->currentNode());
   if (!outNode){
-    qCritical() << Q_FUNC_INFO << "Unable to cast Output node to vtkMRMLDisplayableNode";
+    qCritical() << Q_FUNC_INFO << "Unable to get/cast Output node to vtkMRMLDisplayableNode";
     return;
   }
 
@@ -226,11 +231,47 @@ void qSlicerInterpolationModuleWidget::onApplyButtonClicked()
   double eccentricity = d->eccentricityDoubleSpinBox->value();
   double power = d->powerDoubleSpinBox->value();
 
+  std::vector<vtkMRMLNode*> inputNodes = d->AddSelectorWidget->getSelectedNodes();
+  if (inputNodes.size() < 1) {
+    qCritical() << Q_FUNC_INFO << "No nodes were selected";
+    return;
+  }
+
   qSlicerApplication::setOverrideCursor(Qt::BusyCursor);
-  interpolationLogic->Interpolate(
-        inputNode, outNode,
-        kernel, nullValue, nullPointStrategy,
-        kernelFootPrint, nClosestPoints, radius,
-        sharpness, eccentricity, power);
+  if (inputNodes.size() == 1) {
+    interpolationLogic->Interpolate(
+      vtkMRMLDisplayableNode::SafeDownCast(inputNodes[0]), outNode,
+      kernel, nullValue, nullPointStrategy,
+      kernelFootPrint, nClosestPoints, radius,
+      sharpness, eccentricity, power);
+  } else {
+    qSlicerApplication* app = qSlicerApplication::application();
+    if (!app) {
+      qCritical() << Q_FUNC_INFO << "Unable to get Application instance";
+      return;
+    }
+
+    vtkSlicerMergeNodesLogic* mergeNodesLogic = vtkSlicerMergeNodesLogic::SafeDownCast(
+      app->moduleLogic("MergeNodes"));
+    if (!mergeNodesLogic) {
+      qCritical() << Q_FUNC_INFO << "Unable to get MergeNodes logic instance";
+      return;
+    }
+
+    std::vector<vtkMRMLDisplayableNode*> dispNodes;
+    for (vtkMRMLNode* node : inputNodes){
+      if (vtkMRMLDisplayableNode::SafeDownCast(node))
+        dispNodes.push_back(vtkMRMLDisplayableNode::SafeDownCast(node));
+    }
+
+    vtkNew<vtkMRMLModelNode> mergedModelNode;
+    mergeNodesLogic->AppendPolyData(dispNodes, mergedModelNode);
+
+    interpolationLogic->Interpolate(
+      mergedModelNode, outNode,
+      kernel, nullValue, nullPointStrategy,
+      kernelFootPrint, nClosestPoints, radius,
+      sharpness, eccentricity, power);
+  }
   qSlicerApplication::restoreOverrideCursor();
 }

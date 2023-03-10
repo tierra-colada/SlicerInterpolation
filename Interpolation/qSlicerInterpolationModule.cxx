@@ -88,7 +88,7 @@ QStringList qSlicerInterpolationModule::categories() const
 //-----------------------------------------------------------------------------
 QStringList qSlicerInterpolationModule::dependencies() const
 {
-  return QStringList() << "Markups" << "Models" << "Volumes";
+  return QStringList() << "Markups" << "Models" << "Volumes" << "MergeNodes";
 }
 
 //-----------------------------------------------------------------------------

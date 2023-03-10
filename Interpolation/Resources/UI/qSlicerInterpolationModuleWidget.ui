@@ -15,39 +15,18 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
+    <widget class="qSlicerMergeNodesAddSelectorWidget" name="AddSelectorWidget" native="true"/>
+   </item>
+   <item>
     <layout class="QFormLayout" name="formLayout_3">
      <item row="0" column="0">
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>Input:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="qMRMLNodeComboBox" name="inputNodeSelector">
-       <property name="nodeTypes">
-        <stringlist>
-         <string>vtkMRMLScalarVolumeNode</string>
-         <string>vtkMRMLModelNode</string>
-         <string>vtkMRMLMarkupsNode</string>
-        </stringlist>
-       </property>
-       <property name="addEnabled">
-        <bool>false</bool>
-       </property>
-       <property name="removeEnabled">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
       <widget class="QLabel" name="label_2">
        <property name="text">
         <string>Output:</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
+     <item row="0" column="1">
       <widget class="qMRMLNodeComboBox" name="outputNodeSelector">
        <property name="nodeTypes">
         <stringlist>
@@ -340,25 +319,15 @@
    <header>qSlicerWidget.h</header>
    <container>1</container>
   </customwidget>
+  <customwidget>
+   <class>qSlicerMergeNodesAddSelectorWidget</class>
+   <extends>QWidget</extends>
+   <header>qSlicerMergeNodesAddSelectorWidget.h</header>
+   <container>1</container>
+  </customwidget>
  </customwidgets>
  <resources/>
  <connections>
-  <connection>
-   <sender>qSlicerInterpolationModuleWidget</sender>
-   <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
-   <receiver>inputNodeSelector</receiver>
-   <slot>setMRMLScene(vtkMRMLScene*)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>262</x>
-     <y>159</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>292</x>
-     <y>21</y>
-    </hint>
-   </hints>
-  </connection>
   <connection>
    <sender>qSlicerInterpolationModuleWidget</sender>
    <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
