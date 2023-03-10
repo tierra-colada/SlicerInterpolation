@@ -23,6 +23,9 @@
 #include <vtkMRMLModelNode.h>
 #include <vtkMRMLVolumeNode.h>
 #include <vtkMRMLMarkupsNode.h>
+#include <vtkMRMLDisplayNode.h>
+#include <vtkPointData.h>
+#include <vtkCellData.h>
 
 // VTK includes
 #include <vtkIntArray.h>
@@ -101,14 +104,36 @@ void vtkSlicerMergeNodesLogic::AppendPolyData(
     return;
   }
 
+  std::string scalarName = "ActiveScalarsMerged";
   vtkNew<vtkAppendPolyData> appendFilter;
   for (vtkMRMLDisplayableNode* node : nodesIn){
-    if (vtkMRMLModelNode::SafeDownCast(node) &&
-        vtkMRMLModelNode::SafeDownCast(node)->GetPolyData()){
-      appendFilter->AddInputData(vtkMRMLModelNode::SafeDownCast(node)->GetPolyData());
-    } else if (vtkMRMLMarkupsNode::SafeDownCast(node) &&
-               vtkMRMLMarkupsNode::SafeDownCast(node)->GetCurve()){
-      appendFilter->AddInputData(vtkMRMLMarkupsNode::SafeDownCast(node)->GetCurve());
+    vtkMRMLModelNode* modelNode = vtkMRMLModelNode::SafeDownCast(node);
+    vtkMRMLMarkupsNode* markupsNode = vtkMRMLMarkupsNode::SafeDownCast(node);
+    if (modelNode && modelNode->GetPolyData()){
+      vtkPointData* pointData = modelNode->GetPolyData()->GetPointData();
+      vtkCellData* cellData = modelNode->GetPolyData()->GetCellData();
+      if (pointData && pointData->GetScalars()){
+        vtkNew<vtkDoubleArray> arr;
+        arr->DeepCopy(pointData->GetScalars());
+        arr->SetName(scalarName.c_str());
+        pointData->SetScalars(arr);
+      }
+      if (cellData && cellData->GetScalars()){
+        vtkNew<vtkDoubleArray> arr;
+        arr->DeepCopy(cellData->GetScalars());
+        arr->SetName(scalarName.c_str());
+        cellData->SetScalars(arr);
+      }
+      appendFilter->AddInputData(modelNode->GetPolyData());
+    } else if (markupsNode && markupsNode->GetCurve()){
+      vtkMRMLDisplayNode* displayNode = markupsNode->GetDisplayNode();
+      if (displayNode && displayNode->GetActiveScalarArray()){
+        vtkNew<vtkDoubleArray> arr;
+        arr->DeepCopy(displayNode->GetActiveScalarArray());
+        arr->SetName(scalarName.c_str());
+        markupsNode->GetCurve()->GetPointData()->AddArray(arr);
+      }
+      appendFilter->AddInputData(markupsNode->GetCurve());
     }
   }
 
@@ -162,19 +187,41 @@ void vtkSlicerMergeNodesLogic::AppendAny(
     return;
   }
 
+  std::string scalarName = "ActiveScalarsMerged";
   vtkNew<vtkAppendFilter> appendFilter;
   appendFilter->SetMergePoints(mergeCoincidentalPoints);
   appendFilter->SetTolerance(tol);
   for (vtkMRMLDisplayableNode* node : nodesIn){
-    if (vtkMRMLModelNode::SafeDownCast(node) &&
-        vtkMRMLModelNode::SafeDownCast(node)->GetMesh()){
-      appendFilter->AddInputData(vtkMRMLModelNode::SafeDownCast(node)->GetMesh());
-    } else if (vtkMRMLMarkupsNode::SafeDownCast(node) &&
-               vtkMRMLMarkupsNode::SafeDownCast(node)->GetCurve()){
-      appendFilter->AddInputData(vtkMRMLMarkupsNode::SafeDownCast(node)->GetCurve());
-    } else if (vtkMRMLVolumeNode::SafeDownCast(node) &&
-               vtkMRMLVolumeNode::SafeDownCast(node)->GetImageData()){
-      appendFilter->AddInputData(vtkMRMLVolumeNode::SafeDownCast(node)->GetImageData());
+    vtkMRMLModelNode* modelNode = vtkMRMLModelNode::SafeDownCast(node);
+    vtkMRMLMarkupsNode* markupsNode = vtkMRMLMarkupsNode::SafeDownCast(node);
+    vtkMRMLVolumeNode* volumeNode = vtkMRMLVolumeNode::SafeDownCast(node);
+    if (modelNode && modelNode->GetMesh()){
+      vtkPointData* pointData = modelNode->GetPolyData()->GetPointData();
+      vtkCellData* cellData = modelNode->GetPolyData()->GetCellData();
+      if (pointData && pointData->GetScalars()){
+        vtkNew<vtkDoubleArray> arr;
+        arr->DeepCopy(pointData->GetScalars());
+        arr->SetName(scalarName.c_str());
+        pointData->SetScalars(arr);
+      }
+      if (cellData && cellData->GetScalars()){
+        vtkNew<vtkDoubleArray> arr;
+        arr->DeepCopy(cellData->GetScalars());
+        arr->SetName(scalarName.c_str());
+        cellData->SetScalars(arr);
+      }
+      appendFilter->AddInputData(modelNode->GetMesh());
+    } else if (markupsNode && markupsNode->GetCurve()){
+      vtkMRMLDisplayNode* displayNode = markupsNode->GetDisplayNode();
+      if (displayNode && displayNode->GetActiveScalarArray()){
+        vtkNew<vtkDoubleArray> arr;
+        arr->DeepCopy(displayNode->GetActiveScalarArray());
+        arr->SetName(scalarName.c_str());
+        markupsNode->GetCurve()->GetPointData()->AddArray(arr);
+      }
+      appendFilter->AddInputData(markupsNode->GetCurve());
+    } else if (volumeNode && volumeNode->GetImageData()){
+      appendFilter->AddInputData(volumeNode->GetImageData());
     }
   }
 
