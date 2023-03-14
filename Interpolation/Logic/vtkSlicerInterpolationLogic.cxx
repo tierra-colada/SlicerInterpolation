@@ -341,9 +341,11 @@ void vtkSlicerInterpolationLogic::Interpolate(
 
     interpolator->SetSourceData(transformFilter->GetOutput());
     interpolator->SetInputData(imageData);
+    interpolator->Update();
+
+    // reset default origin and spacing before observing it and AFTER interpolation
     interpolator->GetImageDataOutput()->SetOrigin(0,0,0);
     interpolator->GetImageDataOutput()->SetSpacing(1,1,1);
-    interpolator->Update();
 
     volumeNodeOut->SetAndObserveImageData(interpolator->GetImageDataOutput());
   } else if (modelNodeIn && markupsNodeOut) {
