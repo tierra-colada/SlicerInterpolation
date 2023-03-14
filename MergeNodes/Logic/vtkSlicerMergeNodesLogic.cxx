@@ -127,13 +127,19 @@ void vtkSlicerMergeNodesLogic::AppendPolyData(
       appendFilter->AddInputData(modelNode->GetPolyData());
     } else if (markupsNode && markupsNode->GetCurve()){
       vtkMRMLDisplayNode* displayNode = markupsNode->GetDisplayNode();
-      if (displayNode && displayNode->GetActiveScalarArray()){
-        vtkNew<vtkDoubleArray> arr;
-        arr->DeepCopy(displayNode->GetActiveScalarArray());
-        arr->SetName(scalarName.c_str());
-        markupsNode->GetCurve()->GetPointData()->AddArray(arr);
-      }
-      appendFilter->AddInputData(markupsNode->GetCurve());
+      if (!displayNode || !displayNode->GetActiveScalarArray())
+        continue;
+
+      vtkNew<vtkDoubleArray> arr;
+      arr->DeepCopy(displayNode->GetActiveScalarArray());
+      arr->SetName(scalarName.c_str());
+      vtkNew<vtkPolyData> polyData;
+      polyData->DeepCopy(markupsNode->GetCurve());
+      polyData->GetPointData()->SetScalars(arr);
+      appendFilter->AddInputData(polyData);
+    } else {
+      vtkErrorMacro("vtkSlicerMergeNodesLogic::AppendPolyData: node is neither Model nor Markups");
+      continue;
     }
   }
 

@@ -24,6 +24,8 @@
 #include <vtkMRMLVolumeNode.h>
 #include <vtkMRMLModelNode.h>
 #include <vtkMRMLMarkupsNode.h>
+#include <vtkMRMLMarkupsDisplayNode.h>
+#include <vtkMRMLStaticMeasurement.h>
 
 // VTK includes
 #include <vtkIntArray.h>
@@ -40,9 +42,16 @@
 #include <vtkUnstructuredGrid.h>
 #include <vtkPointData.h>
 #include<vtkMergePoints.h>
+#include <vtkTransform.h>
+#include <vtkImageReslice.h>
+#include <vtkMatrix4x4.h>
+#include <vtkTransformFilter.h>
+#include <vtkPolyLine.h>
+#include <vtkAssignAttribute.h>
 
 // STD includes
 #include <cassert>
+#include <vector>
 
 //----------------------------------------------------------------------------
 vtkStandardNewMacro(vtkSlicerInterpolationLogic);
@@ -292,42 +301,136 @@ void vtkSlicerInterpolationLogic::Interpolate(
   // PassPointArraysOff is important
   interpolator->PassPointArraysOff();
 
-  if (vtkMRMLVolumeNode::SafeDownCast(nodeOut)){
-    interpolator->SetInputData(vtkMRMLVolumeNode::SafeDownCast(nodeOut)->GetImageData());
-  } else if (vtkMRMLModelNode::SafeDownCast(nodeOut)) {
-    interpolator->SetInputData(vtkMRMLModelNode::SafeDownCast(nodeOut)->GetMesh());
-  } else if (vtkMRMLMarkupsNode::SafeDownCast(nodeOut)) {
-    interpolator->SetInputData(vtkMRMLMarkupsNode::SafeDownCast(nodeOut)->GetCurve());
-  } else {
-    vtkErrorMacro("vtkSlicerInterpolationLogic::Interpolate: Output node is neither Volume, Model or Markups");
-    return;
-  }
+  vtkMRMLModelNode* modelNodeIn = vtkMRMLModelNode::SafeDownCast(nodeIn);
+  vtkMRMLModelNode* modelNodeOut = vtkMRMLModelNode::SafeDownCast(nodeOut);
+  vtkMRMLVolumeNode* volumeNodeOut = vtkMRMLVolumeNode::SafeDownCast(nodeOut);
+  vtkMRMLMarkupsNode* markupsNodeOut = vtkMRMLMarkupsNode::SafeDownCast(nodeOut);
+  if (modelNodeIn && volumeNodeOut) {
+    if (!volumeNodeOut->GetImageData()) {
+      vtkErrorMacro("vtkSlicerInterpolationLogic::Interpolate: Output volume doesn't contain ImageData");
+      return;
+    }
+    // We can't trasnform imageData so that interpolator works correctly.
+    // But instead we can apply inverse transform to the model node.
+    double origin[3] = { 0 };
+    volumeNodeOut->GetOrigin(origin);
+    double spacings[3] = { 0 };
+    volumeNodeOut->GetSpacing(spacings);
 
-  if (vtkMRMLVolumeNode::SafeDownCast(nodeIn)){
-    interpolator->SetSourceData(vtkMRMLVolumeNode::SafeDownCast(nodeIn)->GetImageData());
-  } else if (vtkMRMLModelNode::SafeDownCast(nodeIn)) {
-    interpolator->SetSourceData(vtkMRMLModelNode::SafeDownCast(nodeIn)->GetMesh());
-  } else if (vtkMRMLMarkupsNode::SafeDownCast(nodeIn)) {
-    interpolator->SetSourceData(vtkMRMLMarkupsNode::SafeDownCast(nodeIn)->GetCurve());
-  } else {
-    vtkErrorMacro("vtkSlicerInterpolationLogic::Interpolate: Input node is neither Volume, Model or Markups");
-    return;
-  }
+    vtkNew<vtkImageData> imageData;
+    imageData->ShallowCopy(volumeNodeOut->GetImageData());
+    imageData->SetOrigin(0,0,0);
+    imageData->SetSpacing(spacings);
 
-  interpolator->Update();
+    vtkNew<vtkMatrix4x4> m;
+    // get directions
+    volumeNodeOut->GetIJKToRASDirectionMatrix(m.GetPointer());
+    // add translation
+    m->SetElement(0,3,origin[0]);
+    m->SetElement(1,3,origin[1]);
+    m->SetElement(2,3,origin[2]);
 
-  if (vtkMRMLVolumeNode::SafeDownCast(nodeOut)){
-    vtkMRMLVolumeNode::SafeDownCast(nodeOut)->SetAndObserveImageData(
-          interpolator->GetImageDataOutput());
-  } else if (vtkMRMLModelNode::SafeDownCast(nodeOut)) {
-    vtkMRMLModelNode::SafeDownCast(nodeOut)->SetAndObserveMesh(
-          vtkPointSet::SafeDownCast(interpolator->GetOutput()));
-  } else if (vtkMRMLMarkupsNode::SafeDownCast(nodeOut)) {
-    // for markups we only can try to set scalars
-    vtkMRMLMarkupsNode::SafeDownCast(nodeOut)->GetCurve()->GetPointData()->SetScalars(
-          vtkPointSet::SafeDownCast(interpolator->GetOutput())->GetPointData()->GetScalars());
+    vtkNew<vtkTransform> transform;
+    transform->SetMatrix(m);
+    transform->Inverse();
+
+    vtkNew<vtkTransformFilter> transformFilter;
+    transformFilter->SetInputData(modelNodeIn->GetMesh());
+    transformFilter->SetTransform(transform);
+    transformFilter->Update();
+
+    interpolator->SetSourceData(transformFilter->GetOutput());
+    interpolator->SetInputData(imageData);
+    interpolator->GetImageDataOutput()->SetOrigin(0,0,0);
+    interpolator->GetImageDataOutput()->SetSpacing(1,1,1);
+    interpolator->Update();
+
+    volumeNodeOut->SetAndObserveImageData(interpolator->GetImageDataOutput());
+  } else if (modelNodeIn && markupsNodeOut) {
+    if (!markupsNodeOut->GetCurve() || !markupsNodeOut->GetCurve()->GetPointData()) {
+      vtkErrorMacro("vtkSlicerInterpolationLogic::Interpolate: Markups doesn't contain pointData");
+      return;
+    }
+
+    // Create a vtkPoints object and store the points in it
+    vtkNew<vtkPoints> points;
+    for (size_t i = 0; i < markupsNodeOut->GetNumberOfControlPoints(); i++) {
+      double p[3] = { 0 };
+      markupsNodeOut->GetNthControlPointPositionWorld(i, p);
+      points->InsertNextPoint(p);
+    }
+
+    vtkNew<vtkPolyLine> polyLine;
+    polyLine->GetPointIds()->SetNumberOfIds(points->GetNumberOfPoints());
+    for (size_t i = 0; i < points->GetNumberOfPoints(); i++){
+      polyLine->GetPointIds()->SetId(i, i);
+    }
+
+    vtkNew<vtkDoubleArray> arr;
+    arr->SetName("data");
+    arr->SetNumberOfValues(points->GetNumberOfPoints());
+
+    // Create a cell array to store the lines in and add the lines to it
+    vtkNew<vtkCellArray> cells;
+    cells->InsertNextCell(polyLine);
+
+    // Create a polydata to store everything in
+    vtkNew<vtkPolyData> polyData;
+
+    // Add the points to the dataset
+    polyData->SetPoints(points);
+
+    // Add the lines to the dataset
+    polyData->SetLines(cells);
+    polyData->GetPointData()->SetScalars(arr);
+
+    interpolator->SetSourceData(modelNodeIn->GetMesh());
+    interpolator->SetInputData(polyData);
+    interpolator->Update();
+
+    vtkPointSet* interpolatedPointSet = vtkPointSet::SafeDownCast(interpolator->GetOutput());
+    if (!interpolatedPointSet || 
+      !interpolatedPointSet->GetPointData() || 
+      !interpolatedPointSet->GetPointData()->GetScalars() ||
+      interpolatedPointSet->GetPointData()->GetScalars()->GetNumberOfValues() != markupsNodeOut->GetNumberOfControlPoints()) {
+      vtkErrorMacro("vtkSlicerInterpolationLogic::Interpolate: Unable to interpolate model on markups");
+      return;
+    }
+
+    vtkNew<vtkDoubleArray> arrInterpolated;
+    arrInterpolated->DeepCopy(interpolatedPointSet->GetPointData()->GetScalars());
+    std::string measurementName = "interpolatedValues";
+    if (markupsNodeOut->GetMeasurement(measurementName.c_str())) {
+      vtkMRMLMeasurement* measurement = markupsNodeOut->GetMeasurement(measurementName.c_str());
+      measurement->SetControlPointValues(arrInterpolated);
+      measurement->Modified();
+    } else {
+      vtkNew<vtkMRMLStaticMeasurement> measurement;
+      measurement->SetName(measurementName);
+      measurement->SetUnits("mm");
+      measurement->SetPrintFormat("");  // Prevent from showing up in SH Description
+      measurement->SetControlPointValues(arrInterpolated);
+      markupsNodeOut->AddMeasurement(measurement);
+    }
+
+    vtkMRMLMarkupsDisplayNode* dispNode =
+      vtkMRMLMarkupsDisplayNode::SafeDownCast(markupsNodeOut->GetDisplayNode());
+    if (dispNode){
+      double valRange[2] = {0,0};
+      arrInterpolated->GetFiniteRange(valRange);
+      dispNode->SetScalarRange(valRange[0], valRange[1]);
+      dispNode->SetActiveScalar(measurementName.c_str(), vtkAssignAttribute::POINT_DATA);
+      dispNode->SetScalarVisibility(true);
+    }
+  } else if (modelNodeIn && modelNodeOut) {
+    interpolator->SetSourceData(modelNodeIn->GetMesh());
+    interpolator->SetInputData(modelNodeOut->GetMesh());
+    interpolator->Update();
+
+    modelNodeOut->SetAndObserveMesh(
+      vtkPointSet::SafeDownCast(interpolator->GetOutput()));
   } else {
-    vtkErrorMacro("vtkSlicerInterpolationLogic::Interpolate: Output node is neither Volume, Model or Markups");
+    vtkErrorMacro("vtkSlicerInterpolationLogic::Interpolate: Input node is not a Model and output is neither Model, Volume or Markups");
     return;
   }
 }

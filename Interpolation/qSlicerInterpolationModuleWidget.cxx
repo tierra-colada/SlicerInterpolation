@@ -238,42 +238,73 @@ void qSlicerInterpolationModuleWidget::onApplyButtonClicked()
   }
 
   qSlicerApplication::setOverrideCursor(Qt::BusyCursor);
-  if (inputNodes.size() == 1) {
-    interpolationLogic->Interpolate(
-      vtkMRMLDisplayableNode::SafeDownCast(inputNodes[0]), outNode,
-      kernel, nullValue, nullPointStrategy,
-      kernelFootPrint, nClosestPoints, radius,
-      sharpness, eccentricity, power);
-  } else {
-    // if there are multiple input nodes then we should merge them before interpolation
-    qSlicerApplication* app = qSlicerApplication::application();
-    if (!app) {
-      qCritical() << Q_FUNC_INFO << "Unable to get Application instance";
-      return;
-    }
 
-    vtkSlicerMergeNodesLogic* mergeNodesLogic = vtkSlicerMergeNodesLogic::SafeDownCast(
-      app->moduleLogic("MergeNodes"));
-    if (!mergeNodesLogic) {
-      qCritical() << Q_FUNC_INFO << "Unable to get MergeNodes logic instance";
-      return;
-    }
-
-    std::vector<vtkMRMLDisplayableNode*> dispNodes;
-    for (vtkMRMLNode* node : inputNodes){
-      if (vtkMRMLDisplayableNode::SafeDownCast(node))
-        dispNodes.push_back(vtkMRMLDisplayableNode::SafeDownCast(node));
-    }
-
-    vtkNew<vtkMRMLModelNode> mergedModelNode;
-    mergeNodesLogic->AppendPolyData(dispNodes, mergedModelNode);
-
-    // once input nodes are merged use the merged one as a source of interpolation
-    interpolationLogic->Interpolate(
-      mergedModelNode, outNode,
-      kernel, nullValue, nullPointStrategy,
-      kernelFootPrint, nClosestPoints, radius,
-      sharpness, eccentricity, power);
+  // if there are multiple input nodes then we should merge them before interpolation
+  qSlicerApplication* app = qSlicerApplication::application();
+  if (!app) {
+    qCritical() << Q_FUNC_INFO << "Unable to get Application instance";
+    return;
   }
+
+  vtkSlicerMergeNodesLogic* mergeNodesLogic = vtkSlicerMergeNodesLogic::SafeDownCast(
+    app->moduleLogic("MergeNodes"));
+  if (!mergeNodesLogic) {
+    qCritical() << Q_FUNC_INFO << "Unable to get MergeNodes logic instance";
+    return;
+  }
+
+  std::vector<vtkMRMLDisplayableNode*> dispNodes;
+  for (vtkMRMLNode* node : inputNodes){
+    if (vtkMRMLDisplayableNode::SafeDownCast(node))
+      dispNodes.push_back(vtkMRMLDisplayableNode::SafeDownCast(node));
+  }
+
+  vtkNew<vtkMRMLModelNode> mergedModelNode;
+  mergeNodesLogic->AppendPolyData(dispNodes, mergedModelNode);
+
+  // once input nodes are merged use the merged one as a source of interpolation
+  interpolationLogic->Interpolate(
+    mergedModelNode, outNode,
+    kernel, nullValue, nullPointStrategy,
+    kernelFootPrint, nClosestPoints, radius,
+    sharpness, eccentricity, power);
+
+  //if (inputNodes.size() == 1) {
+  //  interpolationLogic->Interpolate(
+  //    vtkMRMLDisplayableNode::SafeDownCast(inputNodes[0]), outNode,
+  //    kernel, nullValue, nullPointStrategy,
+  //    kernelFootPrint, nClosestPoints, radius,
+  //    sharpness, eccentricity, power);
+  //} else {
+  //  // if there are multiple input nodes then we should merge them before interpolation
+  //  qSlicerApplication* app = qSlicerApplication::application();
+  //  if (!app) {
+  //    qCritical() << Q_FUNC_INFO << "Unable to get Application instance";
+  //    return;
+  //  }
+
+  //  vtkSlicerMergeNodesLogic* mergeNodesLogic = vtkSlicerMergeNodesLogic::SafeDownCast(
+  //    app->moduleLogic("MergeNodes"));
+  //  if (!mergeNodesLogic) {
+  //    qCritical() << Q_FUNC_INFO << "Unable to get MergeNodes logic instance";
+  //    return;
+  //  }
+
+  //  std::vector<vtkMRMLDisplayableNode*> dispNodes;
+  //  for (vtkMRMLNode* node : inputNodes){
+  //    if (vtkMRMLDisplayableNode::SafeDownCast(node))
+  //      dispNodes.push_back(vtkMRMLDisplayableNode::SafeDownCast(node));
+  //  }
+
+  //  vtkNew<vtkMRMLModelNode> mergedModelNode;
+  //  mergeNodesLogic->AppendPolyData(dispNodes, mergedModelNode);
+
+  //  // once input nodes are merged use the merged one as a source of interpolation
+  //  interpolationLogic->Interpolate(
+  //    mergedModelNode, outNode,
+  //    kernel, nullValue, nullPointStrategy,
+  //    kernelFootPrint, nClosestPoints, radius,
+  //    sharpness, eccentricity, power);
+  //}
   qSlicerApplication::restoreOverrideCursor();
 }
