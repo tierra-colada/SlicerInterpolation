@@ -62,14 +62,14 @@ QString qSlicerMergeNodesModule::helpText() const
 //-----------------------------------------------------------------------------
 QString qSlicerMergeNodesModule::acknowledgementText() const
 {
-  return "This work was partially funded by NIH grant NXNNXXNNNNNN-NNXN";
+  return "";
 }
 
 //-----------------------------------------------------------------------------
 QStringList qSlicerMergeNodesModule::contributors() const
 {
   QStringList moduleContributors;
-  moduleContributors << QString("John Doe (AnyWare Corp.)");
+  moduleContributors << QString("Kerim Khemraev (Tierra Colada Corp.)");
   return moduleContributors;
 }
 

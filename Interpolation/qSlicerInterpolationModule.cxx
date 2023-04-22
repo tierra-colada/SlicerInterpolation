@@ -62,14 +62,14 @@ QString qSlicerInterpolationModule::helpText() const
 //-----------------------------------------------------------------------------
 QString qSlicerInterpolationModule::acknowledgementText() const
 {
-  return "This work was partially funded by NIH grant NXNNXXNNNNNN-NNXN";
+  return "";
 }
 
 //-----------------------------------------------------------------------------
 QStringList qSlicerInterpolationModule::contributors() const
 {
   QStringList moduleContributors;
-  moduleContributors << QString("John Doe (AnyWare Corp.)");
+  moduleContributors << QString("Kerim Khemraev (Tierra Colada Corp.)");
   return moduleContributors;
 }
 
