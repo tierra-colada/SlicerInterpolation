@@ -69,7 +69,7 @@ QString qSlicerMergeNodesModule::acknowledgementText() const
 QStringList qSlicerMergeNodesModule::contributors() const
 {
   QStringList moduleContributors;
-  moduleContributors << QString("Kerim Khemraev (Tierra Colada Corp.)");
+  moduleContributors << QString("Kerim Khemraev (Tierra Colada LLC)");
   return moduleContributors;
 }
 

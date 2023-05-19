@@ -69,7 +69,7 @@ QString qSlicerInterpolationModule::acknowledgementText() const
 QStringList qSlicerInterpolationModule::contributors() const
 {
   QStringList moduleContributors;
-  moduleContributors << QString("Kerim Khemraev (Tierra Colada Corp.)");
+  moduleContributors << QString("Kerim Khemraev (Tierra Colada LLC)");
   return moduleContributors;
 }
 
